@@ -71,8 +71,8 @@ SECTIONS
   This is what AT directive does.
   Checkout https://sourceware.org/binutils/docs/ld/Output-Section-LMA.html#Output-Section-LMA
   */
-  _sidata = .; /*start address for the initialization values of the .data section */
-  .data : AT(_sidata) 
+  _sidata = LOADADDR(.data); /*start address for the initialization values of the .data section */
+  .data : 
   {
     . = ALIGN(4);
     _sdata = .;   /* start location of .data section */
@@ -80,8 +80,9 @@ SECTIONS
     *(.data*)
     _edata = .;   /* end location of .data section */
     . = ALIGN(4);
-  } >RAM
+  } >RAM AT> FLASH
 
+  . = ALIGN(4);
   .bss :
   {
     . = ALIGN(4);

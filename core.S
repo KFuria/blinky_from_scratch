@@ -63,7 +63,8 @@ Reset_Handler:
         cmp r2, r4
         bcc FillZerobss
 
-    b main
+    bl main
+    bx lr
 .size Reset_Handler, .-Reset_Handler
 
 /*

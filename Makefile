@@ -1,10 +1,10 @@
 TARGET = main
 
 LD_SCRIPT 	= ./linkerscript.ld
-AS_SRC 		= ./core.S
+AS_SRC 		= ./core.s
 C_SRC 		= ./main.c
 
-MCU_SPEC = cortex-m4
+ARCH_FLAGS	= -mthumb -mcpu=cortex-m4
 
 # Toolchain definitions (ARM bare metal defaults)
 CC = arm-none-eabi-gcc
@@ -17,37 +17,40 @@ OS = arm-none-eabi-size
 # Assembly directives.
 ASFLAGS += -c
 ASFLAGS += -O0
-ASFLAGS += -mcpu=$(MCU_SPEC)
-ASFLAGS += -mthumb
+ASFLAGS += $(ARCH_FLAGS)
 ASFLAGS += -Wall
-ASFLAGS += -g
 # (Set error messages to appear on a single line.)
 ASFLAGS += -fmessage-length=0
+ASFLAGS += -g
 
+
+# C compilation directives
+CFLAGS += $(ARCH_FLAGS)
+CFLAGS += -O0
+CFLAGS += -Wall
 CFLAGS += -g
+CFLAGS += -fmessage-length=0
+CFLAGS += --specs=nosys.specs
 
 # Linker directives.
-LFLAGS += -mcpu=$(MCU_SPEC)
-LFLAGS += -mthumb
+LFLAGS += $(ARCH_FLAGS)
 LFLAGS += -Wall
 LFLAGS += --specs=nosys.specs
 LFLAGS += -nostdlib
 LFLAGS += -lgcc
 LFLAGS += -T$(LD_SCRIPT)
 
-OBJS =  $(VECT_TBL:.S=.o)
-OBJS += $(AS_SRC:.S=.o)
+OBJS += $(AS_SRC:.s=.o)
 OBJS += $(C_SRC:.c=.o)
 
 .PHONY: all
 all: $(TARGET).bin
 
-%.o: %.S
+%.o: %.s
 	$(CC) -x assembler-with-cpp $(ASFLAGS) $< -o $@
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $(INCLUDE) $< -o $@
-
 
 $(TARGET).elf: $(OBJS)
 	$(CC) $^ $(LFLAGS) -o $@
