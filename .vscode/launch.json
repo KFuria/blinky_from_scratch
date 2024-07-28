@@ -2,8 +2,9 @@
     "version": "0.2.0",
     "configurations": [      
       {
+        "device": "STM32F446RE",
         "cwd": "${workspaceFolder}",
-        "executable": "main.elf",
+        "executable": "blinky.elf",
         "name": "launch OpenOCD",
         "request": "launch",
         "type": "cortex-debug",
@@ -14,11 +15,12 @@
         ],
         "searchDir": [],
         "runToEntryPoint": "",
-        "showDevDebugOutput": "none"
+        "showDevDebugOutput": "none",
+        "svdFile": "${workspaceFolder}/.vscode/STM32F446.svd",
       },
       {
         "cwd": "${workspaceFolder}",
-        "executable": "main.elf",
+        "executable": "blinky.elf",
         "name": "Attach OpenOCD",
         "request": "attach",
         "type": "cortex-debug",
@@ -29,7 +31,8 @@
         ],
         "searchDir": [],
         "runToEntryPoint": "",
-        "showDevDebugOutput": "none"
+        "showDevDebugOutput": "none",
+        "svdFile": "${workspaceFolder}/.vscode/STM32F446.svd",
       }
     ]
   }

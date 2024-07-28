@@ -1,3 +1,5 @@
+#include "main.h"
+
 int main() {
   int val = 0;
   while (1) {

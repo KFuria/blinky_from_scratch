@@ -1,66 +1,145 @@
-TARGET = main
+# Makefile for STM32F446
 
-LD_SCRIPT 	= ./linkerscript.ld
-AS_SRC 		= ./core.s
-C_SRC 		= ./main.c
+######################################
+SRC_DIR = src
+INC_DIR = inc
 
+TARGET = blinky
+
+
+######################################
+# Device setup
+
+FP_FLAGS	?= -mfloat-abi=hard -mfpu=fpv4-sp-d16
 ARCH_FLAGS	= -mthumb -mcpu=cortex-m4
 
-# Toolchain definitions (ARM bare metal defaults)
-CC = arm-none-eabi-gcc
-AS = arm-none-eabi-as
-LD = arm-none-eabi-ld
-OC = arm-none-eabi-objcopy
-OD = arm-none-eabi-objdump
-OS = arm-none-eabi-size
 
-# Assembly directives.
-ASFLAGS += -c
-ASFLAGS += -O0
-ASFLAGS += $(ARCH_FLAGS)
-ASFLAGS += -Wall
-# (Set error messages to appear on a single line.)
-ASFLAGS += -fmessage-length=0
-ASFLAGS += -g
+######################################
+# Linkerscript
+
+LD_SCRIPT 	= linkerscript.ld
 
 
-# C compilation directives
-CFLAGS += $(ARCH_FLAGS)
-CFLAGS += -O0
-CFLAGS += -Wall
-CFLAGS += -g
-CFLAGS += -fmessage-length=0
-CFLAGS += --specs=nosys.specs
+######################################
+# Includes
 
-# Linker directives.
-LFLAGS += $(ARCH_FLAGS)
-LFLAGS += -Wall
-LFLAGS += --specs=nosys.specs
-LFLAGS += -nostdlib
-LFLAGS += -lgcc
-LFLAGS += -T$(LD_SCRIPT)
+DEPS 	+= -I./
+DEPS 	+= -I$(INC_DIR)
 
-OBJS += $(AS_SRC:.s=.o)
-OBJS += $(C_SRC:.c=.o)
 
-.PHONY: all
-all: clean $(TARGET).bin
+######################################
+# Executables and TOOLCHAIN setup
 
-%.o: %.s
-	$(CC) -x assembler-with-cpp $(ASFLAGS) $< -o $@
+PREFIX	?= arm-none-eabi-
+
+CC			:= $(PREFIX)gcc
+CXX			:= $(PREFIX)g++
+LD			:= $(PREFIX)gcc
+AR			:= $(PREFIX)ar
+AS			:= $(PREFIX)as
+OBJCOPY		:= $(PREFIX)objcopy
+OBJDUMP		:= $(PREFIX)objdump
+GDB			:= $(PREFIX)gdb
+OS 			:= $(PREFIX)size
+
+OPT 		:= -O0
+DEBUG		:= -ggdb3
+CSTD		?= -std=c99
+
+######################################
+ # Source Files
+
+AS_SRC 		+= $(SRC_DIR)/startup.s
+C_SRC		+= $(SRC_DIR)/main.c
+
+OBJS 		+= $(AS_SRC:.s=.o)
+OBJS 		+= $(C_SRC:.c=.o)  
+
+#####################################
+# Assembly Flags
+
+ASFLAGS 	+= $(OPT) $(CSTD) $(DEBUG)
+ASFLAGS 	+= $(ARCH_FLAGS)
+ASFLAGS 	+= -Wall -Wextra -Wshadow -Wimplicit-function-declaration
+ASFLAGS 	+= -fmessage-length=0 -fno-common -ffunction-sections -fdata-sections
+
+
+####################################
+# C Flags
+
+CFLAGS		+= $(OPT) $(CSTD) $(DEBUG)
+CFLAGS		+= $(ARCH_FLAGS)
+CFLAGS		+= -Wall -Wextra -Wshadow -Wimplicit-function-declaration
+CFLAGS		+= -fmessage-length=0 -fno-common -ffunction-sections -fdata-sections
+CFLAGS		+= $(DEPS)
+
+
+###################################
+# Linker Flags
+
+LFLAGS		+= -T./$(LD_SCRIPT)
+LFLAGS		+= $(ARCH_FLAGS) $(DEBUG)
+LFLAGS		+= -Wl,-Map=$(*).map
+LFLAGS		+= --static -nostartfiles --specs=nosys.specs -nostdlib -lgcc -Wall
+LFLAGS		+= -Wl,--gc-sections
+
+###################################
+
+.SUFFIXES: .elf .bin .hex .srec .list .map .images
+.SECONDEXPANSION:
+.SECONDARY:
+
+all: elf images bin
+
+elf: $(TARGET).elf
+bin: $(TARGET).bin
+hex: $(TARGET).hex
+srec: $(TARGET).srec
+list: $(TARGET).list
+GENERATED_BINARIES=$(TARGET).elf $(TARGET).bin $(TARGET).hex $(TARGET).srec $(TARGET).list $(TARGET).map
+
+images: $(TARGET).images
+
+print-%:
+	@echo $*=$($*)
+
+%.images: %.elf %.hex %.srec %.list %.map
+	@printf "*** $* images generated ***\n"
+
+%.bin: %.elf
+	@printf "  OBJCOPY $(*).bin\n"
+	@$(OBJCOPY) -Obinary $(*).elf $(*).bin
+	@$(OS) $<
+
+%.hex: %.elf
+	@printf "  OBJCOPY $(*).hex\n"
+	@$(OBJCOPY) -Oihex $(*).elf $(*).hex
+
+%.srec: %.elf
+	@printf "  OBJCOPY $(*).srec\n"
+	@$(OBJCOPY) -Osrec $(*).elf $(*).srec
+
+%.list: %.elf
+	@printf "  OBJDUMP $(*).list\n"
+	@$(OBJDUMP) -S $(*).elf > $(*).list
+
+%.elf %.map: $(OBJS) $(LDSCRIPT) makefile
+	@printf "  LD      $(*).elf\n"
+	@$(LD) $(LFLAGS) $(OBJS) -o $(*).elf
 
 %.o: %.c
-	$(CC) -c $(CFLAGS) $(INCLUDE) $< -o $@
+	@printf "  CC      $(*).c\n"
+	@$(CC) $(CFLAGS) -o $(*).o -c $(*).c
 
-$(TARGET).elf: $(OBJS)
-	$(CC) $^ $(LFLAGS) -o $@
+%.o: %.s
+	@printf "  CC      $(*).s\n"
+	@$(CC) $(ASFLAGS) -o $(*).o -c $(*).s
 
-$(TARGET).bin: $(TARGET).elf
-	$(OC) -S -O binary $< $@
-	$(OS) $<
-
-.PHONY: clean
 clean:
-	rm -f $(OBJS)
-	rm -f $(TARGET).elf
-	rm -f $(TARGET).bin
+	@printf "  CLEAN\n"
+	$(RM) $(GENERATED_BINARIES) generated.* $(OBJS) $(OBJS:%.o=%.d)
+
+
+.PHONY: images clean elf bin hex srec list
+
+-include $(OBJS:.o=.d)
