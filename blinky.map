@@ -4,6 +4,7 @@ Discarded input sections
  .data          0x00000000        0x0 src/startup.o
  .bss           0x00000000        0x0 src/startup.o
  .group         0x00000000        0xc src/main.o
+ .group         0x00000000        0xc src/main.o
  .text          0x00000000        0x0 src/main.o
  .data          0x00000000        0x0 src/main.o
  .bss           0x00000000        0x0 src/main.o
@@ -31,7 +32,7 @@ LOAD src/main.o
                 0x08000000                vector_table
                 0x080001c4                        . = ALIGN (0x4)
 
-.text           0x080001c4       0x70
+.text           0x080001c4       0xe8
                 0x080001c4                        . = ALIGN (0x4)
  *(.text)
  .text          0x080001c4       0x5c src/startup.o
@@ -135,36 +136,37 @@ LOAD src/main.o
                 0x08000220                DMA2_Stream6_IRQHandler
                 0x08000220                SAI1_IRQHandler
                 0x08000220                DMA1_Stream3_IRQHandler
- .text.main     0x08000222       0x12 src/main.o
-                0x08000222                main
-                0x08000234                        . = ALIGN (0x4)
+ .text.wait     0x08000222       0x2a src/main.o
+ .text.main     0x0800024c       0x60 src/main.o
+                0x0800024c                main
+                0x080002ac                        . = ALIGN (0x4)
 
-.glue_7         0x08000234        0x0
- .glue_7        0x08000234        0x0 linker stubs
+.glue_7         0x080002ac        0x0
+ .glue_7        0x080002ac        0x0 linker stubs
 
-.glue_7t        0x08000234        0x0
- .glue_7t       0x08000234        0x0 linker stubs
+.glue_7t        0x080002ac        0x0
+ .glue_7t       0x080002ac        0x0 linker stubs
 
-.vfp11_veneer   0x08000234        0x0
- .vfp11_veneer  0x08000234        0x0 linker stubs
+.vfp11_veneer   0x080002ac        0x0
+ .vfp11_veneer  0x080002ac        0x0 linker stubs
 
-.v4_bx          0x08000234        0x0
- .v4_bx         0x08000234        0x0 linker stubs
+.v4_bx          0x080002ac        0x0
+ .v4_bx         0x080002ac        0x0 linker stubs
 
-.iplt           0x08000234        0x0
- .iplt          0x08000234        0x0 src/startup.o
+.iplt           0x080002ac        0x0
+ .iplt          0x080002ac        0x0 src/startup.o
 
-.rel.dyn        0x08000234        0x0
- .rel.iplt      0x08000234        0x0 src/startup.o
+.rel.dyn        0x080002ac        0x0
+ .rel.iplt      0x080002ac        0x0 src/startup.o
 
-.rodata         0x08000234        0x0
-                0x08000234                        . = ALIGN (0x4)
+.rodata         0x080002ac        0x0
+                0x080002ac                        . = ALIGN (0x4)
  *(.rodata)
  *(.rodata*)
-                0x08000234                        . = ALIGN (0x4)
-                0x08000234                        _sidata = LOADADDR (.data)
+                0x080002ac                        . = ALIGN (0x4)
+                0x080002ac                        _sidata = LOADADDR (.data)
 
-.data           0x20000000        0x0 load address 0x08000234
+.data           0x20000000        0x0 load address 0x080002ac
                 0x20000000                        . = ALIGN (0x4)
                 0x20000000                        _sdata = .
  *(.data)
@@ -172,11 +174,11 @@ LOAD src/main.o
                 0x20000000                        _edata = .
                 0x20000000                        . = ALIGN (0x4)
 
-.igot.plt       0x20000000        0x0 load address 0x08000234
+.igot.plt       0x20000000        0x0 load address 0x080002ac
  .igot.plt      0x20000000        0x0 src/startup.o
                 0x20000000                        . = ALIGN (0x4)
 
-.bss            0x20000000        0x0 load address 0x08000234
+.bss            0x20000000        0x0 load address 0x080002ac
                 0x20000000                        . = ALIGN (0x4)
                 0x20000000                        _sbss = .
  *(.bss)
@@ -186,7 +188,7 @@ LOAD src/main.o
                 0x20000000                        _ebss = .
 
 ._user_heap_stack
-                0x20000000      0x600 load address 0x08000234
+                0x20000000      0x600 load address 0x080002ac
                 0x20000000                        . = ALIGN (0x4)
                 0x20000000                        _ssystem_ram = .
                 0x20000200                        . = (. + _Min_Heap_Size)
@@ -209,44 +211,45 @@ LOAD linker stubs
  .comment       0x00000000       0x45 src/main.o
                                  0x46 (size before relaxing)
 
-.debug_line     0x00000000       0xca
+.debug_line     0x00000000      0x112
  .debug_line    0x00000000       0x78 src/startup.o
- .debug_line    0x00000078       0x52 src/main.o
+ .debug_line    0x00000078       0x9a src/main.o
 
 .debug_line_str
                 0x00000000       0x61
  .debug_line_str
                 0x00000000       0x61 src/startup.o
 
-.debug_info     0x00000000       0x8c
+.debug_info     0x00000000       0xbc
  .debug_info    0x00000000       0x30 src/startup.o
- .debug_info    0x00000030       0x5c src/main.o
+ .debug_info    0x00000030       0x8c src/main.o
 
-.debug_abbrev   0x00000000       0x73
+.debug_abbrev   0x00000000       0xaf
  .debug_abbrev  0x00000000       0x26 src/startup.o
- .debug_abbrev  0x00000026       0x4d src/main.o
+ .debug_abbrev  0x00000026       0x89 src/main.o
 
-.debug_aranges  0x00000000       0x48
+.debug_aranges  0x00000000       0x50
  .debug_aranges
                 0x00000000       0x28 src/startup.o
  .debug_aranges
-                0x00000028       0x20 src/main.o
+                0x00000028       0x28 src/main.o
 
-.debug_str      0x00000000     0x2e37
- .debug_str     0x00000000     0x2e37 src/startup.o
+.debug_str      0x00000000     0x2f76
+ .debug_str     0x00000000     0x2f76 src/startup.o
                                  0x7d (size before relaxing)
- .debug_str     0x00002e37     0x2e0d src/main.o
+ .debug_str     0x00002f76     0x2f5e src/main.o
 
 .debug_rnglists
-                0x00000000       0x2c
+                0x00000000       0x32
  .debug_rnglists
                 0x00000000       0x19 src/startup.o
  .debug_rnglists
-                0x00000019       0x13 src/main.o
+                0x00000019       0x19 src/main.o
 
-.debug_macro    0x00000000      0xac9
- .debug_macro   0x00000000       0x15 src/main.o
- .debug_macro   0x00000015      0xab4 src/main.o
+.debug_macro    0x00000000      0xb0e
+ .debug_macro   0x00000000       0x1a src/main.o
+ .debug_macro   0x0000001a      0xab4 src/main.o
+ .debug_macro   0x00000ace       0x40 src/main.o
 
-.debug_frame    0x00000000       0x2c
- .debug_frame   0x00000000       0x2c src/main.o
+.debug_frame    0x00000000       0x54
+ .debug_frame   0x00000000       0x54 src/main.o

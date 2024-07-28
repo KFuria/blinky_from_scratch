@@ -5,7 +5,7 @@ blinky.elf:     file format elf32-littlearm
 Disassembly of section .text:
 
 080001c4 <Reset_Handler-0x14>:
- 80001c4:	08000234 	.word	0x08000234
+ 80001c4:	080002ac 	.word	0x080002ac
  80001c8:	20000000 	.word	0x20000000
  80001cc:	20000000 	.word	0x20000000
  80001d0:	20000000 	.word	0x20000000
@@ -79,7 +79,7 @@ Reset_Handler:
  8000200:	d3fb      	bcc.n	80001fa <FillZerobss>
 
     bl main
- 8000202:	f000 f80e 	bl	8000222 <main>
+ 8000202:	f000 f823 	bl	800024c <main>
     bx lr
  8000206:	4770      	bx	lr
     ldr   sp, =_estack      /* set stack pointer */
@@ -89,7 +89,7 @@ Reset_Handler:
     ldr r1, =_edata
  8000210:	20000000 	.word	0x20000000
     ldr r2, =_sidata
- 8000214:	08000234 	.word	0x08000234
+ 8000214:	080002ac 	.word	0x080002ac
     ldr r2, =_sbss
  8000218:	20000000 	.word	0x20000000
     ldr r4, =_ebss
@@ -104,19 +104,92 @@ Default_Handler:
         b  Infinite_Loop
  8000220:	e7fe      	b.n	8000220 <ADC_IRQHandler>
 
-08000222 <main>:
+08000222 <wait>:
 #include "main.h"
 
-int main() {
+static void wait(long unsigned int cycles){
  8000222:	b480      	push	{r7}
- 8000224:	b083      	sub	sp, #12
+ 8000224:	b085      	sub	sp, #20
  8000226:	af00      	add	r7, sp, #0
-  int val = 0;
- 8000228:	2300      	movs	r3, #0
- 800022a:	607b      	str	r3, [r7, #4]
+ 8000228:	6078      	str	r0, [r7, #4]
+    for(long unsigned int i = 0; i < cycles; i++){
+ 800022a:	2300      	movs	r3, #0
+ 800022c:	60fb      	str	r3, [r7, #12]
+ 800022e:	e003      	b.n	8000238 <wait+0x16>
+        __asm__("nop");
+ 8000230:	bf00      	nop
+    for(long unsigned int i = 0; i < cycles; i++){
+ 8000232:	68fb      	ldr	r3, [r7, #12]
+ 8000234:	3301      	adds	r3, #1
+ 8000236:	60fb      	str	r3, [r7, #12]
+ 8000238:	68fa      	ldr	r2, [r7, #12]
+ 800023a:	687b      	ldr	r3, [r7, #4]
+ 800023c:	429a      	cmp	r2, r3
+ 800023e:	d3f7      	bcc.n	8000230 <wait+0xe>
+    }
+}
+ 8000240:	bf00      	nop
+ 8000242:	bf00      	nop
+ 8000244:	3714      	adds	r7, #20
+ 8000246:	46bd      	mov	sp, r7
+ 8000248:	bc80      	pop	{r7}
+ 800024a:	4770      	bx	lr
+
+0800024c <main>:
+
+int main() {
+ 800024c:	b580      	push	{r7, lr}
+ 800024e:	af00      	add	r7, sp, #0
+  // Setup clock to enable GPIOA
+  *((volatile unsigned int *) (RCC_BASE + RCC_AHB1ENR)) |= GPIOAEN;
+ 8000250:	4b12      	ldr	r3, [pc, #72]	@ (800029c <main+0x50>)
+ 8000252:	681b      	ldr	r3, [r3, #0]
+ 8000254:	4a11      	ldr	r2, [pc, #68]	@ (800029c <main+0x50>)
+ 8000256:	f043 0301 	orr.w	r3, r3, #1
+ 800025a:	6013      	str	r3, [r2, #0]
+  
+  //Configure GPIOA pin 5 as output
+  *((volatile unsigned int *) (GPIOA_MODER)) &= ~(0x3 << (5*2)); //clear pin 5 moder
+ 800025c:	4b10      	ldr	r3, [pc, #64]	@ (80002a0 <main+0x54>)
+ 800025e:	681b      	ldr	r3, [r3, #0]
+ 8000260:	4a0f      	ldr	r2, [pc, #60]	@ (80002a0 <main+0x54>)
+ 8000262:	f423 6340 	bic.w	r3, r3, #3072	@ 0xc00
+ 8000266:	6013      	str	r3, [r2, #0]
+  *((volatile unsigned int *) (GPIOA_MODER)) |=  (0x1 << (5*2)); //set pin 5 moder to output 
+ 8000268:	4b0d      	ldr	r3, [pc, #52]	@ (80002a0 <main+0x54>)
+ 800026a:	681b      	ldr	r3, [r3, #0]
+ 800026c:	4a0c      	ldr	r2, [pc, #48]	@ (80002a0 <main+0x54>)
+ 800026e:	f443 6380 	orr.w	r3, r3, #1024	@ 0x400
+ 8000272:	6013      	str	r3, [r2, #0]
+  
+  // Toggle pin 5
   while (1) {
-    val += 1;
- 800022c:	687b      	ldr	r3, [r7, #4]
- 800022e:	3301      	adds	r3, #1
- 8000230:	607b      	str	r3, [r7, #4]
- 8000232:	e7fb      	b.n	800022c <main+0xa>
+    // Turn LED ON
+    *((volatile unsigned int *) (GPIOA_ODR)) |= (0x1 << 5);
+ 8000274:	4b0b      	ldr	r3, [pc, #44]	@ (80002a4 <main+0x58>)
+ 8000276:	681b      	ldr	r3, [r3, #0]
+ 8000278:	4a0a      	ldr	r2, [pc, #40]	@ (80002a4 <main+0x58>)
+ 800027a:	f043 0320 	orr.w	r3, r3, #32
+ 800027e:	6013      	str	r3, [r2, #0]
+    wait(16000000 / 16);
+ 8000280:	4809      	ldr	r0, [pc, #36]	@ (80002a8 <main+0x5c>)
+ 8000282:	f7ff ffce 	bl	8000222 <wait>
+
+    // Turn LED OFF
+    *((volatile unsigned int *) (GPIOA_ODR)) &= (0x0 << 5);
+ 8000286:	4b07      	ldr	r3, [pc, #28]	@ (80002a4 <main+0x58>)
+ 8000288:	681b      	ldr	r3, [r3, #0]
+ 800028a:	4b06      	ldr	r3, [pc, #24]	@ (80002a4 <main+0x58>)
+ 800028c:	2200      	movs	r2, #0
+ 800028e:	601a      	str	r2, [r3, #0]
+    wait(16000000 / 16);
+ 8000290:	4805      	ldr	r0, [pc, #20]	@ (80002a8 <main+0x5c>)
+ 8000292:	f7ff ffc6 	bl	8000222 <wait>
+    *((volatile unsigned int *) (GPIOA_ODR)) |= (0x1 << 5);
+ 8000296:	bf00      	nop
+ 8000298:	e7ec      	b.n	8000274 <main+0x28>
+ 800029a:	bf00      	nop
+ 800029c:	40023830 	.word	0x40023830
+ 80002a0:	40020000 	.word	0x40020000
+ 80002a4:	40020014 	.word	0x40020014
+ 80002a8:	000f4240 	.word	0x000f4240
