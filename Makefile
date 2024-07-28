@@ -44,7 +44,7 @@ OBJS += $(AS_SRC:.s=.o)
 OBJS += $(C_SRC:.c=.o)
 
 .PHONY: all
-all: $(TARGET).bin
+all: clean $(TARGET).bin
 
 %.o: %.s
 	$(CC) -x assembler-with-cpp $(ASFLAGS) $< -o $@
