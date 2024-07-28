@@ -1,6 +1,6 @@
 {
     "version": "0.2.0",
-    "configurations": [      
+    "configurations": [
       {
         "device": "STM32F446RE",
         "cwd": "${workspaceFolder}",
@@ -16,7 +16,7 @@
         "searchDir": [],
         "runToEntryPoint": "",
         "showDevDebugOutput": "none",
-        "svdFile": "${workspaceFolder}/.vscode/STM32F446.svd",
+        "svdFile": "${workspaceFolder}/.vscode/STM32F446.svd"
       },
       {
         "cwd": "${workspaceFolder}",
@@ -32,7 +32,7 @@
         "searchDir": [],
         "runToEntryPoint": "",
         "showDevDebugOutput": "none",
-        "svdFile": "${workspaceFolder}/.vscode/STM32F446.svd",
+        "svdFile": "${workspaceFolder}/.vscode/STM32F446.svd"
       }
     ]
   }
